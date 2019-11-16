@@ -117,16 +117,15 @@ public class CameraActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String file = takePicture();
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                Intent i = new Intent(getApplicationContext(), MainActivity.class);
+//                try {
+//                    Thread.sleep(500);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+                Intent i = new Intent(getApplicationContext(), ViewActivity.class);
                 i.putExtra("imgPath", file);
                 startActivity(i);
-
-
+                cameraDevice.close();
             }
         });
 
@@ -164,7 +163,7 @@ public class CameraActivity extends AppCompatActivity {
             AssetManager assetManager = getAssets();
             name = "/asd.jpg";
 //            file = new File(Environment.getExternalStorageDirectory()+"/Testy/"+UUID.randomUUID().toString()+".jpg");
-            file = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+name);
+            file = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/asd.jpg");
             File transfer = new File(Environment.getDataDirectory().getAbsolutePath());
             transfer = file;
             Log.d("file location", file.getAbsolutePath());
@@ -203,7 +202,7 @@ public class CameraActivity extends AppCompatActivity {
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
                     Toast.makeText(CameraActivity.this, "Saved"+file, Toast.LENGTH_SHORT).show();
-                    createCameraPreview();
+                    //createCameraPreview();
                 }
             };
 
@@ -243,6 +242,7 @@ public class CameraActivity extends AppCompatActivity {
 //        } else {
 //            Log.d("dupa:", dir.toString());
 //        }
+
         return file.getAbsolutePath().toString();
     }
 

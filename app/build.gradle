@@ -17,6 +17,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+//    externalNativeBuild {
+//        cmake {
+//            version "3.10.2"  // The key line
+//            path file('CMakeLists.txt')
+//        }
+//    }
 }
 
 dependencies {
@@ -28,3 +34,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation project(path: ':OpenCV-4.1.2')
 }
+
+

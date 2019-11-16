@@ -2,6 +2,10 @@ package com.example.copen;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
@@ -35,6 +39,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 
@@ -54,6 +59,7 @@ public class CameraActivity extends AppCompatActivity {
 
     private Button btnCapture;
     private TextureView textureView;
+    private ImageView imageView3;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     static {
@@ -71,6 +77,7 @@ public class CameraActivity extends AppCompatActivity {
     private ImageReader imageReader;
 
     //Save to file
+    private String name;
     private File file;
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private boolean mFlashSupported;
@@ -109,13 +116,24 @@ public class CameraActivity extends AppCompatActivity {
         btnCapture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                takePicture();
+                String file = takePicture();
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                i.putExtra("imgPath", file);
+                startActivity(i);
+
+
             }
         });
+
     }
 
-    private void takePicture() {
-        if(cameraDevice == null) return;
+    private String takePicture() {
+        //if(cameraDevice == null) return;
         CameraManager magnager = (CameraManager)getSystemService(Context.CAMERA_SERVICE);
         try {
             CameraCharacteristics characteristics = magnager.getCameraCharacteristics(cameraDevice.getId());
@@ -143,8 +161,13 @@ public class CameraActivity extends AppCompatActivity {
             //Check orientation on base device
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION,ORIENTATIONS.get(rotation));
-
-            file = new File(Environment.getExternalStorageDirectory()+"/Testy/"+UUID.randomUUID().toString()+".jpg");
+            AssetManager assetManager = getAssets();
+            name = "/asd.jpg";
+//            file = new File(Environment.getExternalStorageDirectory()+"/Testy/"+UUID.randomUUID().toString()+".jpg");
+            file = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+name);
+            File transfer = new File(Environment.getDataDirectory().getAbsolutePath());
+            transfer = file;
+            Log.d("file location", file.getAbsolutePath());
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
                 public void onImageAvailable(ImageReader imageReader) {
@@ -204,7 +227,26 @@ public class CameraActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+//            Intent i = new Intent(this, MainActivity.class);
+////            i.putExtra("imgPath", name);
+////            startActivity(i);
+
+//        File dir = new File(transfer.getAbsolutePath());
+//        Log.d("abs path:", dir.getAbsolutePath());
+//        if (dir.exists()) {
+//            Log.d("path: ", dir.toString());
+//            BitmapFactory.Options options = new BitmapFactory.Options();
+//            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+//            Bitmap bitmap2 = BitmapFactory.decodeFile(String.valueOf(dir), options);
+//            imageView3.setImageBitmap(bitmap2);
+//
+//        } else {
+//            Log.d("dupa:", dir.toString());
+//        }
+        return file.getAbsolutePath().toString();
     }
+
+
 
 
     private void createCameraPreview() {
@@ -317,7 +359,6 @@ public class CameraActivity extends AppCompatActivity {
     protected void onPause() {
         stopBackgroundTheread();
         super.onPause();
-
     }
 
     private void stopBackgroundTheread() {

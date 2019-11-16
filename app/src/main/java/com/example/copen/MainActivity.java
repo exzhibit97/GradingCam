@@ -13,6 +13,7 @@ import org.opencv.android.OpenCVLoader;
 public class MainActivity extends AppCompatActivity {
 
     private Button cameraActivitybtn;
+    private Button perspectiveCorrection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         cameraActivitybtn = findViewById(R.id.button);
+
 
         cameraActivitybtn.setOnClickListener(new View.OnClickListener() {
             @Override

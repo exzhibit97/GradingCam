@@ -95,13 +95,12 @@ public class MainActivity extends AppCompatActivity {
 //            Log.d("Extras empty", extras.toString());
 //        }
 
-            cameraActivitybtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
-                    startActivity(intent);
-                }
-            });
-        }
+        cameraActivitybtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
+                startActivity(intent);
+            }
+        });
     }
-
+}

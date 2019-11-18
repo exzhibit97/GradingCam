@@ -5,8 +5,6 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.example.copen.Classes.Blueprint;
-/*import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;*/
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -16,17 +14,17 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 
 import static org.opencv.imgproc.Imgproc.COLOR_BGR2GRAY;
 import static org.opencv.imgproc.Imgproc.TM_CCOEFF_NORMED;
 
+/*import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;*/
+
 public class AnswerRecognition {
 
-    public static void recognize(Mat sourceMat, Mat templateMat, ArrayList answersArray) {
+    public static String recognize(Mat sourceMat, Mat templateMat, ArrayList answersArray) {
         //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
 
@@ -39,11 +37,8 @@ public class AnswerRecognition {
         char[] finalAnswers = new char[20];
         char[] tempKey = new char[]{'A','B','A','A','B','A','A','B','C','D','C','C','B','D','A','B','C','B','B','C'};
         double[] eachQuestionMaxVals = new double[4];
-        //Load image file
-//    source= Imgcodecs.imread(filePath+"corrected.jpg", IMREAD_GRAYSCALE);
 
-//    template=Imgcodecs.imread(filePath+"questions.jpg", IMREAD_GRAYSCALE);
-        //(template.height()/20);
+
         int interval = template.height() / 20;
         Log.d("INTERVAL", String.valueOf(interval) + "source width" + source.width() + "source height" + source.height() + " template width" + template.width() + "template height" + template.height());
         Mat outputImage = new Mat();
@@ -52,14 +47,14 @@ public class AnswerRecognition {
         Core.MinMaxLocResult mmr = Core.minMaxLoc(outputImage);
         //create point with coordinates from where to draw rectangle
         Point matchLoc = mmr.maxLoc;
-        //System.out.println(matchLoc);
+        Log.d("MATCHLOC: ", String.valueOf(matchLoc.x) + " " + matchLoc.y);
 
         //drawing rectangle around question header matched template
         Imgproc.rectangle(source, matchLoc, new Point(matchLoc.x + interval,
                 matchLoc.y + template.height()), new Scalar(0, 0, 255));
         //rectangle with first question answers area inside
         for (int i = 0; i < 20; i++) {
-            Rect question = new Rect(0, (int)matchLoc.y, source.width() - template.width(), interval);
+            Rect question = new Rect(template.cols(), (int)matchLoc.y, source.width() - template.width(), interval);
             Imgproc.rectangle(source, matchLoc, new Point(matchLoc.x + (template.cols()) * 5,
                     matchLoc.y + interval), new Scalar(0, 0, 255));
             //imwrite("C:\\Users\\Patryk\\Desktop\\template\\asdasd.jpg", source);
@@ -119,6 +114,7 @@ public class AnswerRecognition {
         }
 
         Log.d("ANSWERS:", String.valueOf(stringBuilder) + ". You scored :" + pointsCounter + " points");
+
         Blueprint bp = new Blueprint(finalAnswers);
         Blueprint bp2 = new Blueprint(finalAnswers);
         //System.out.println(bp.getId());
@@ -132,5 +128,6 @@ public class AnswerRecognition {
         } catch (IOException e) {
             e.printStackTrace();
         }*/
+        return String.valueOf(stringBuilder);
     }
 }

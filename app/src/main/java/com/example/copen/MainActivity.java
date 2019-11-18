@@ -1,17 +1,25 @@
 package com.example.copen;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import org.opencv.android.OpenCVLoader;
+import androidx.appcompat.app.AppCompatActivity;
 
-import static org.opencv.imgproc.Imgproc.Canny;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,20 +37,22 @@ public class MainActivity extends AppCompatActivity {
         imageView = findViewById(R.id.imageView);
         perspectiveCorrection = findViewById(R.id.button2);
 
-//        AssetManager assetManager = getAssets();
-//        Mat mat = new Mat();
-//        InputStream is = null;
-//        try {
-//            is = assetManager.open("10.jpg");
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
+        AssetManager assetManager = getAssets();
+        Mat mat = new Mat();
+        InputStream is = null;
+        try {
+            is = assetManager.open("/temlates_bigger");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 //        Bitmap bitmap = BitmapFactory.decodeStream(is);
 //        Utils.bitmapToMat(bitmap, mat);
 //        Canny(mat.clone(), mat, 50, 50);
 //        Utils.matToBitmap(mat, bitmap);
 //        imageView.setImageBitmap(bitmap);
+
+
 
         Bundle extras = getIntent().getExtras();
         //File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath());

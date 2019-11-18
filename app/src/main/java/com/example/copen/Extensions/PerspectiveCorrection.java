@@ -1,9 +1,5 @@
 package com.example.copen.Extensions;
 
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -12,12 +8,10 @@ import org.opencv.core.Point;
 import org.opencv.core.Size;
 import org.opencv.utils.Converters;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.opencv.imgcodecs.Imgcodecs.imread;
-import static org.opencv.imgcodecs.Imgcodecs.imwrite;
 import static org.opencv.imgproc.Imgproc.CHAIN_APPROX_SIMPLE;
 import static org.opencv.imgproc.Imgproc.COLOR_BayerBG2RGB;
 import static org.opencv.imgproc.Imgproc.Canny;

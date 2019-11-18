@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -23,20 +24,23 @@ import static com.example.copen.Extensions.PerspectiveCorrection.correctPerspect
 public class ViewActivity extends AppCompatActivity {
 
     private ImageView imageView2;
-
+    private TextView textView;
+    private String recognitionResult;
+    private Mat result;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view);
         imageView2 = findViewById(R.id.imageView2);
+        textView = findViewById(R.id.textView);
         Log.d("successfull", "SUCCESS");
 
         Bundle extras = getIntent().getExtras();
 
-
+        result = new Mat();
         if (extras != null) {
             String path = extras.getString("imgPath");
-            Mat result = new Mat();
+//            Mat result = new Mat();
             File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath());
             if (directory.exists()) {
                 Log.d("image source:", directory.toString());
@@ -73,7 +77,8 @@ public class ViewActivity extends AppCompatActivity {
                 answers.add(bitmap2);
             }
 
-            recognize(result, questions, answers);
+            recognitionResult = recognize(result, questions, answers);
+            textView.setText(recognitionResult);
         } else {
             Log.d("Extras empty", extras.toString());
         }

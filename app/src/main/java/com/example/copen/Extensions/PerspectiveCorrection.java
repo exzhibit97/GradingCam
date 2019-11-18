@@ -112,6 +112,17 @@ public class PerspectiveCorrection {
 //            ocvPOut4= new Point(resultWidth, 0);
 //        }
 
+        if (inputMat.height() > inputMat.width()) {
+            // int temp = resultWidth;
+            // resultWidth = resultHeight;
+            // resultHeight = temp;
+
+            ocvPOut3 = new Point(0, 0);
+            ocvPOut4 = new Point(0, resultHeight);
+            ocvPOut1 = new Point(resultWidth, resultHeight);
+            ocvPOut2 = new Point(resultWidth, 0);
+        }
+
         Mat outputMat = new Mat(resultWidth, resultHeight, CvType.CV_8UC4);
 
         List<Point> dest = new ArrayList<Point>();

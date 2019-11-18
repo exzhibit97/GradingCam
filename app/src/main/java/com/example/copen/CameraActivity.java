@@ -38,6 +38,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.example.copen.Classes.CameraFocusOnTouchHandler;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -286,6 +288,8 @@ public class CameraActivity extends AppCompatActivity {
 
     private void createCameraPreview() {
         try {
+            CameraManager magnager = (CameraManager)getSystemService(Context.CAMERA_SERVICE);
+            final CameraCharacteristics characteristics = magnager.getCameraCharacteristics(cameraDevice.getId());
             SurfaceTexture texture = textureView.getSurfaceTexture();
             assert texture != null;
             texture.setDefaultBufferSize(imageDimension.getWidth(),imageDimension.getHeight());
@@ -297,6 +301,7 @@ public class CameraActivity extends AppCompatActivity {
                 public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
                     if(cameraDevice == null) return;
                     cameraCaptureSessions = cameraCaptureSession;
+                    textureView.setOnTouchListener(new CameraFocusOnTouchHandler(characteristics, captureRequestBuilder, cameraCaptureSessions, mBackgroundHandler));
                     updatePreview();
                 }
 

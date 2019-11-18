@@ -5,8 +5,8 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.example.copen.Classes.Blueprint;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+/*import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;*/
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -126,11 +126,11 @@ public class AnswerRecognition {
 //        for (int i = 0; i < asd.length; i++) {
 //            System.out.println(asd[i]);
 //        }
-        try (Writer writer = new FileWriter("Output.json")) {
+      /*  try (Writer writer = new FileWriter("Output.json")) {
             Gson gson = new GsonBuilder().create();
             gson.toJson(bp, writer);
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 }

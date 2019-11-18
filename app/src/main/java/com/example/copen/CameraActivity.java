@@ -4,12 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Bundle;
+
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
@@ -28,7 +26,6 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
-import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -39,7 +36,9 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
 
 
@@ -52,7 +51,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 
 public class CameraActivity extends AppCompatActivity {
@@ -60,6 +58,9 @@ public class CameraActivity extends AppCompatActivity {
     private Button btnCapture;
     private TextureView textureView;
     private ImageView imageView3;
+    private Switch sw;
+
+    private boolean flashmode;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     static {
@@ -112,6 +113,20 @@ public class CameraActivity extends AppCompatActivity {
         assert textureView != null;
         textureView.setSurfaceTextureListener(texturelistener);
 
+        sw = findViewById(R.id.switch2);
+        sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    flashmode = true;
+                    Log.e(String.valueOf(CameraActivity.class),"TRUE");
+                }else{
+                    flashmode = false;
+                    Log.e(String.valueOf(CameraActivity.class),"FALSE");
+                }
+            }
+        });
+
         btnCapture = findViewById(R.id.btnCapture);
         btnCapture.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -157,6 +172,13 @@ public class CameraActivity extends AppCompatActivity {
             captureBuilder.addTarget(reader.getSurface());
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
 
+            if(flashmode){
+                captureBuilder.set(CaptureRequest.FLASH_MODE,CaptureRequest.FLASH_MODE_TORCH);
+                captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+            } else {
+                captureBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+                captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_OFF);
+            }
             //Check orientation on base device
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION,ORIENTATIONS.get(rotation));

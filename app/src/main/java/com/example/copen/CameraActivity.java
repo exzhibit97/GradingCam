@@ -1,6 +1,7 @@
 package com.example.copen;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -288,8 +289,7 @@ public class CameraActivity extends AppCompatActivity {
 
     private void createCameraPreview() {
         try {
-            CameraManager magnager = (CameraManager)getSystemService(Context.CAMERA_SERVICE);
-            final CameraCharacteristics characteristics = magnager.getCameraCharacteristics(cameraDevice.getId());
+
             SurfaceTexture texture = textureView.getSurfaceTexture();
             assert texture != null;
             texture.setDefaultBufferSize(imageDimension.getWidth(),imageDimension.getHeight());
@@ -297,11 +297,11 @@ public class CameraActivity extends AppCompatActivity {
             captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             captureRequestBuilder.addTarget(surface);
             cameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback() {
+                @SuppressLint("ClickableViewAccessibility")
                 @Override
                 public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
                     if(cameraDevice == null) return;
                     cameraCaptureSessions = cameraCaptureSession;
-                    textureView.setOnTouchListener(new CameraFocusOnTouchHandler(characteristics, captureRequestBuilder, cameraCaptureSessions, mBackgroundHandler));
                     updatePreview();
                 }
 
@@ -319,7 +319,10 @@ public class CameraActivity extends AppCompatActivity {
         if(cameraDevice == null) Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
         captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
         try {
+           // CameraManager magnager = (CameraManager)getSystemService(Context.CAMERA_SERVICE);
+           // final CameraCharacteristics characteristics = magnager.getCameraCharacteristics(cameraDevice.getId());
             cameraCaptureSessions.setRepeatingRequest(captureRequestBuilder.build(), null,mBackgroundHandler);
+           // textureView.setOnTouchListener(new CameraFocusOnTouchHandler(characteristics, captureRequestBuilder, cameraCaptureSessions, mBackgroundHandler, flashmode));
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -377,6 +380,15 @@ public class CameraActivity extends AppCompatActivity {
 
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+            CameraManager magnager = (CameraManager)getSystemService(Context.CAMERA_SERVICE);
+            assert magnager != null;
+            final CameraCharacteristics characteristics;
+            try {
+                characteristics = magnager.getCameraCharacteristics(cameraDevice.getId());
+                textureView.setOnTouchListener(new CameraFocusOnTouchHandler(characteristics, captureRequestBuilder, cameraCaptureSessions, mBackgroundHandler, flashmode));
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
 
         }
     };

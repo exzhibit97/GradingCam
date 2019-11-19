@@ -25,6 +25,7 @@ public class CameraFocusOnTouchHandler implements View.OnTouchListener {
     private CaptureRequest.Builder mPreviewRequestBuilder;
     private CameraCaptureSession mCaptureSession;
     private Handler mBackgroundHandler;
+    private boolean isFlashON;
 
     private boolean mManualFocusEngaged = false;
 
@@ -32,12 +33,14 @@ public class CameraFocusOnTouchHandler implements View.OnTouchListener {
             CameraCharacteristics cameraCharacteristics,
             CaptureRequest.Builder previewRequestBuilder,
             CameraCaptureSession captureSession,
-            Handler backgroundHandler
+            Handler backgroundHandler,
+            boolean isFocusON
     ) {
         mCameraCharacteristics = cameraCharacteristics;
         mPreviewRequestBuilder = previewRequestBuilder;
         mCaptureSession = captureSession;
         mBackgroundHandler = backgroundHandler;
+        isFlashON = isFocusON;
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -113,7 +116,16 @@ public class CameraFocusOnTouchHandler implements View.OnTouchListener {
         if (isMeteringAreaAFSupported()) {
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, new MeteringRectangle[]{focusAreaTouch});
         }
-        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+
+        if(isFlashON){
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+            mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE,CaptureRequest.FLASH_MODE_TORCH);
+        }else {
+            mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_OFF);
+        }
+
+        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
         mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);
         mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
         mPreviewRequestBuilder.setTag("FOCUS_TAG"); //we'll capture this later for resuming the preview
@@ -121,6 +133,7 @@ public class CameraFocusOnTouchHandler implements View.OnTouchListener {
         //then we ask for a single request (not repeating!)
         try {
             mCaptureSession.capture(mPreviewRequestBuilder.build(), captureCallbackHandler, mBackgroundHandler);
+
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }

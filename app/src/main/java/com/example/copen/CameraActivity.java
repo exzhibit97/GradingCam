@@ -1,16 +1,10 @@
 package com.example.copen;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.Bundle;
-import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -35,8 +29,14 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -47,13 +47,21 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
+import java.util.Objects;
+
+import static android.hardware.camera2.CameraCharacteristics.*;
+
+
 
 
 public class CameraActivity extends AppCompatActivity {
 
     private Button btnCapture;
     private TextureView textureView;
+    private ImageView imageView3;
+    private Switch sw;
+
+    private boolean flashmode;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     static {
@@ -71,11 +79,21 @@ public class CameraActivity extends AppCompatActivity {
     private ImageReader imageReader;
 
     //Save to file
+    private String name;
     private File file;
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private boolean mFlashSupported;
     private Handler mBackgroundHandler;
-    private HandlerThread mBackgroundTheard;
+    private HandlerThread mBackgroundThread;
+
+    @Override
+    public void onBackPressed()
+    {
+        super.onBackPressed();
+        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+        finish();
+
+    }
 
     CameraDevice.StateCallback stateCallBack = new CameraDevice.StateCallback() {
         @Override
@@ -105,24 +123,44 @@ public class CameraActivity extends AppCompatActivity {
         assert textureView != null;
         textureView.setSurfaceTextureListener(texturelistener);
 
-        btnCapture = findViewById(R.id.btnCapture);
+        sw = findViewById(R.id.switch2);
+        sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    flashmode = true;
+                    Log.e(String.valueOf(CameraActivity.class),"TRUE");
+                }else{
+                    flashmode = false;
+                    Log.e(String.valueOf(CameraActivity.class),"FALSE");
+                }
+            }
+        });
+
+        btnCapture = findViewById(R.id.button);
         btnCapture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                takePicture();
+                String file = takePicture();
+//                Intent i = new Intent(getApplicationContext(), ViewActivity.class);
+                Intent i = new Intent(getApplicationContext(), TransitionActivity.class);
+                i.putExtra("imgPath", file);
+                startActivity(i);
+                cameraDevice.close();
             }
         });
+
     }
 
-    private void takePicture() {
-        if(cameraDevice == null) return;
-        CameraManager magnager = (CameraManager)getSystemService(Context.CAMERA_SERVICE);
+    private String takePicture() {
+        //if(cameraDevice == null) return;
+        CameraManager manager = (CameraManager)getSystemService(Context.CAMERA_SERVICE);
         try {
-            CameraCharacteristics characteristics = magnager.getCameraCharacteristics(cameraDevice.getId());
+            assert manager != null;
+            CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraDevice.getId());
             Size [] jpegSizes = null;
-            if(characteristics != null)
-                jpegSizes = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
-                        .getOutputSizes(ImageFormat.JPEG);
+            jpegSizes = Objects.requireNonNull(characteristics.get(SCALER_STREAM_CONFIGURATION_MAP))
+                    .getOutputSizes(ImageFormat.JPEG);
 
             //Capture image with custom size
             int width = 640;
@@ -140,11 +178,24 @@ public class CameraActivity extends AppCompatActivity {
             captureBuilder.addTarget(reader.getSurface());
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
 
+            if(flashmode){
+                captureBuilder.set(CaptureRequest.FLASH_MODE,CaptureRequest.FLASH_MODE_TORCH);
+                captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+            } else {
+                captureBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+                captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_OFF);
+            }
             //Check orientation on base device
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
-            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION,ORIENTATIONS.get(rotation));
-
-            file = new File(Environment.getExternalStorageDirectory()+"/Testy/"+UUID.randomUUID().toString()+".jpg");
+            int jpegrotation = getJpegOrientation(characteristics, rotation);
+            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION,ORIENTATIONS.get(jpegrotation));
+            AssetManager assetManager = getAssets();
+            name = "/asd.jpg";
+//            file = new File(Environment.getExternalStorageDirectory()+"/Testy/"+UUID.randomUUID().toString()+".jpg");
+            file = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/asd.jpg");
+            File transfer = new File(Environment.getDataDirectory().getAbsolutePath());
+            transfer = file;
+            Log.d("file location", file.getAbsolutePath());
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
                 public void onImageAvailable(ImageReader imageReader) {
@@ -180,7 +231,7 @@ public class CameraActivity extends AppCompatActivity {
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
                     Toast.makeText(CameraActivity.this, "Saved"+file, Toast.LENGTH_SHORT).show();
-                    createCameraPreview();
+                    //createCameraPreview();
                 }
             };
 
@@ -204,6 +255,42 @@ public class CameraActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+//            Intent i = new Intent(this, MainActivity.class);
+////            i.putExtra("imgPath", name);
+////            startActivity(i);
+
+//        File dir = new File(transfer.getAbsolutePath());
+//        Log.d("abs path:", dir.getAbsolutePath());
+//        if (dir.exists()) {
+//            Log.d("path: ", dir.toString());
+//            BitmapFactory.Options options = new BitmapFactory.Options();
+//            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+//            Bitmap bitmap2 = BitmapFactory.decodeFile(String.valueOf(dir), options);
+//            imageView3.setImageBitmap(bitmap2);
+//
+//        } else {
+//            Log.d("dua:", dir.toString());
+//        }
+
+        return file.getAbsolutePath().toString();
+    }
+
+    private int getJpegOrientation(CameraCharacteristics c, int deviceOrientation) {
+        if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN) return 0;
+        int sensorOrientation = c.get(SENSOR_ORIENTATION);
+
+        // Round device orientation to a multiple of 90
+        deviceOrientation = (deviceOrientation + 45) / 90 * 90;
+
+        // Reverse device orientation for front-facing cameras
+        boolean facingFront = c.get(LENS_FACING) == LENS_FACING_FRONT;
+        if (facingFront) deviceOrientation = -deviceOrientation;
+
+        // Calculate desired JPEG orientation relative to camera orientation to make
+        // the image upright relative to the device orientation
+        int jpegOrientation = (sensorOrientation + deviceOrientation + 360) % 360;
+
+        return jpegOrientation;
     }
 
 
@@ -250,7 +337,7 @@ public class CameraActivity extends AppCompatActivity {
         try{
             cameraId = manager.getCameraIdList()[0];
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
-            StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+            StreamConfigurationMap map = characteristics.get(SCALER_STREAM_CONFIGURATION_MAP);
             assert map != null;
             imageDimension = map.getOutputSizes(SurfaceTexture.class)[0];
             //Check realtime permission if run higher API 23
@@ -308,23 +395,22 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     private void startBackgroundTheard() {
-        mBackgroundTheard = new HandlerThread("Camera Background");
-        mBackgroundTheard.start();
-        mBackgroundHandler = new Handler(mBackgroundTheard.getLooper());
+        mBackgroundThread = new HandlerThread("Camera Background");
+        mBackgroundThread.start();
+        mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
     }
 
     @Override
     protected void onPause() {
-        stopBackgroundTheread();
+        stopBackgroundThread();
         super.onPause();
-
     }
 
-    private void stopBackgroundTheread() {
-        mBackgroundTheard.quitSafely();
+    private void stopBackgroundThread() {
+        mBackgroundThread.quitSafely();
         try{
-            mBackgroundTheard.join();
-            mBackgroundTheard = null;
+            mBackgroundThread.join();
+            mBackgroundThread = null;
             mBackgroundHandler = null;
         } catch (InterruptedException e) {
             e.printStackTrace();

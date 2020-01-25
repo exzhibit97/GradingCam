@@ -1,6 +1,5 @@
 package com.example.copen.Extensions;
 
-
 import android.graphics.Bitmap;
 import android.util.Log;
 
@@ -19,15 +18,9 @@ import java.util.ArrayList;
 import static org.opencv.imgproc.Imgproc.COLOR_BGR2GRAY;
 import static org.opencv.imgproc.Imgproc.TM_CCOEFF_NORMED;
 
-/*import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;*/
-
 public class AnswerRecognition {
 
     public static String recognize(Mat sourceMat, Mat templateMat, ArrayList answersArray) {
-        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-
-
         Mat source = sourceMat;
         Imgproc.cvtColor(source, source, COLOR_BGR2GRAY);
         Mat template = templateMat;
@@ -35,12 +28,12 @@ public class AnswerRecognition {
         String filePath = "C:\\Users\\Patryk\\Desktop\\template\\";
         char[] maxValMatches = new char[]{'A', 'B', 'C', 'D'};
         char[] finalAnswers = new char[20];
-        char[] tempKey = new char[]{'A','B','A','A','B','A','A','B','C','D','C','C','B','D','A','B','C','B','B','C'};
-        double[] eachQuestionMaxVals = new double[4];
+        char[] tempKey = new char[]{'A', 'B', 'C', 'B', 'B', 'A', 'A', 'D', 'C', 'D', 'B', 'B', 'A', 'D', 'C', 'B', 'A', 'D', 'C', 'B'};
+//        double[] eachQuestionMaxVals = new double[4];
 
 
-        int interval = template.height() / 20;
-        Log.d("INTERVAL", String.valueOf(interval) + "source width" + source.width() + "source height" + source.height() + " template width" + template.width() + "template height" + template.height());
+        int interval = 135;
+        Log.d("INTERVAL", interval + "source width" + source.width() + "source height" + source.height() + " template width" + template.width() + "template height" + template.height());
         Mat outputImage = new Mat();
         //Matching question header to whole image
         Imgproc.matchTemplate(source, template, outputImage, TM_CCOEFF_NORMED);
@@ -48,21 +41,21 @@ public class AnswerRecognition {
         //create point with coordinates from where to draw rectangle
         Point matchLoc = mmr.maxLoc;
         Log.d("MATCHLOC: ", String.valueOf(matchLoc.x) + " " + matchLoc.y);
-
+        int row = 0;
         //drawing rectangle around question header matched template
         Imgproc.rectangle(source, matchLoc, new Point(matchLoc.x + interval,
                 matchLoc.y + template.height()), new Scalar(0, 0, 255));
         //rectangle with first question answers area inside
         for (int i = 0; i < 20; i++) {
-            Rect question = new Rect(template.cols(), (int)matchLoc.y, source.width() - template.width(), interval);
+            Rect question = new Rect((int) matchLoc.x + 50, (int) matchLoc.y, source.width() - 51, interval);
+            //Rect question = new Rect((source.width()/5) - 10, (int)matchLoc.y, source.width() - template.width(), interval);
+            //Rect question = new Rect((source.width()/5)-10, row, (source.width()/5)*4, (source.height()/20) );
             Imgproc.rectangle(source, matchLoc, new Point(matchLoc.x + (template.cols()) * 5,
                     matchLoc.y + interval), new Scalar(0, 0, 255));
-            //imwrite("C:\\Users\\Patryk\\Desktop\\template\\asdasd.jpg", source);
             //create new mat from rectangle area
-            Log.d("question rectangle :", question.height  + " by " + question.width + ". Starting from:" + matchLoc.x + " " + matchLoc.y);
+            //Log.d("question rectangle :", question.height  + " by " + question.width + ". Starting from:" + matchLoc.x + " " + matchLoc.y+interval);
             Mat questionMat = new Mat(source, question);
-            //save that mat as an image
-            //imwrite("C:\\Users\\Patryk\\Desktop\\template\\q_sep\\question" + (i+1) + ".jpg", questionMat);
+            Point matchQ = null;
             for (int j = 0; j < 4; j++) {
                 //Mat questionTemplate = Imgcodecs.imread(filePath + "\\templates_bigger\\" + (j + 1) + ".jpg", IMREAD_GRAYSCALE);
                 Mat questionTemplate = new Mat();
@@ -73,47 +66,48 @@ public class AnswerRecognition {
                 Imgproc.matchTemplate(questionMat, questionTemplate, outputFirstQ, TM_CCOEFF_NORMED);
                 Core.MinMaxLocResult minMaxQuestion = Core.minMaxLoc(outputFirstQ);
                 //Log.d("Question: ",(i + 1) + " checked answer: [" + maxValMatches[j] + "] MAXVAL: " + minMaxQuestion.maxVal);
-                eachQuestionMaxVals[j] = minMaxQuestion.maxVal;
-                //System.out.println("Matchlock.x " + matchLoc.x + " Matchlock.y " + matchLoc.y);
-                Point matchQ = minMaxQuestion.maxLoc;
+                //eachQuestionMaxVals[j] = minMaxQuestion.maxVal;
+                //Log.d("mlk: ", "Matchlock.x " + matchLoc.x + " Matchlock.y " + matchLoc.y);
+                matchQ = minMaxQuestion.maxLoc;
+                //Log.d("MatchQ: ","X: " + matchQ.x + " Y:" + matchQ.y);
                 //draw and rectangle in place where template matches with source image
                 Imgproc.rectangle(questionMat, matchQ, new Point(matchQ.x + (questionTemplate.cols()),
                         matchQ.y + questionTemplate.rows()), new Scalar(255, 0, 0));
-            }
-            int index = 0;
-            double min = eachQuestionMaxVals[index];
-            for (int j = 0; j < 4; j++) {
-                if (eachQuestionMaxVals[j] < min) {
-                    min = eachQuestionMaxVals[j];
-                    index = j;
-                }
-            }
-            //System.out.println("Smallest: " + index);
-            finalAnswers[i] = maxValMatches[index];
 
-            System.out.println("--------------------------------------------------------------------------------");
+            }
+            if ((matchQ.x > 100) && (matchQ.x < 200)) {
+                finalAnswers[i] = 'A';
+            } else if ((matchQ.x >= 230) && (matchQ.x < 350)) {
+                finalAnswers[i] = 'B';
+            } else if ((matchQ.x >= 350) && (matchQ.x < 500)) {
+                finalAnswers[i] = 'C';
+            } else if (matchQ.x >= 500) {
+                finalAnswers[i] = 'D';
+            }
+
+
             matchLoc.y += interval;
-            //Imgcodecs.imwrite(filePath + "\\graded\\question" + i + ".jpg", questionMat);
+
         }
 
         StringBuilder stringBuilder = new StringBuilder();
         String answers;
         for (int i = 0; i < 20; i++) {
-//            System.out.print(finalAnswers[i] + " ");
+
             stringBuilder.append(finalAnswers[i]);
         }
 
         //count points
         int pointsCounter = 0;
         for (int i = 0; i < finalAnswers.length; i++) {
-            if(finalAnswers[i] == tempKey[i]) {
-                pointsCounter+=1;
+            if (finalAnswers[i] == tempKey[i]) {
+                pointsCounter += 1;
             } else {
-                Log.d("MISTAKES", "You got mistaken in question: " + (i+1) + ". You answered " + finalAnswers[i] + " where it should be " + tempKey[i]);
+                //Log.d("MISTAKES", "You got mistaken in question: " + (i+1) + ". You answered " + finalAnswers[i] + " where it should be " + tempKey[i]);
             }
         }
 
-        Log.d("ANSWERS:", String.valueOf(stringBuilder) + ". You scored :" + pointsCounter + " points");
+        Log.d("ANSWERS:", stringBuilder + ". You scored :" + pointsCounter + " points");
 
         Blueprint bp = new Blueprint(finalAnswers);
         Blueprint bp2 = new Blueprint(finalAnswers);
@@ -128,6 +122,6 @@ public class AnswerRecognition {
         } catch (IOException e) {
             e.printStackTrace();
         }*/
-      return String.valueOf(stringBuilder);
+        return String.valueOf(stringBuilder);
     }
 }

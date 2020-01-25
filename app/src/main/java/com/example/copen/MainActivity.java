@@ -1,10 +1,6 @@
 package com.example.copen;
 
 import android.content.Intent;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,18 +10,16 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
 import org.opencv.core.Mat;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
 
     private Button cameraActivitybtn;
-    private Button perspectiveCorrection;
+    private Button keySelection;
     private ImageView imageView;
+
+    private String recognitionResult;
+    private Mat result;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,17 +28,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         cameraActivitybtn = findViewById(R.id.button);
-        imageView = findViewById(R.id.imageView);
-        perspectiveCorrection = findViewById(R.id.button2);
+//        imageView = findViewById(R.id.imageView);
+        keySelection = findViewById(R.id.button2);
 
-        AssetManager assetManager = getAssets();
-        Mat mat = new Mat();
-        InputStream is = null;
-        try {
-            is = assetManager.open("/temlates_bigger");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        AssetManager assetManager = getAssets();
+//        Mat mat = new Mat();
+//        InputStream is = null;
+//        try {
+//            is = assetManager.open("/templates_bigger/");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
 //        Bitmap bitmap = BitmapFactory.decodeStream(is);
 //        Utils.bitmapToMat(bitmap, mat);
@@ -53,8 +47,7 @@ public class MainActivity extends AppCompatActivity {
 //        imageView.setImageBitmap(bitmap);
 
 
-
-        Bundle extras = getIntent().getExtras();
+//        Bundle extras = getIntent().getExtras();
         //File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath());
 //        if(extras!=null) {
 //            String s = extras.getString("imgPath");
@@ -70,10 +63,10 @@ public class MainActivity extends AppCompatActivity {
 //                imageView.setImageBitmap(bitmap2);
 //
 //            } else {
-//                Log.d("dupa:", dir.toString());
+//                Log.d("dua:", dir.toString());
 //            }
 //        } else {
-//            Log.d("DUPA:", "DUPA BLADA");
+//            Log.d("DUA:", "DUA BLADA");
 //        }
 
 //        if (extras != null) {
@@ -95,13 +88,90 @@ public class MainActivity extends AppCompatActivity {
 //            Log.d("Extras empty", extras.toString());
 //        }
 
-            cameraActivitybtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
-                    startActivity(intent);
-                }
-            });
-        }
+        keySelection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), KeyActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        cameraActivitybtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
+                startActivity(intent);
+            }
+        });
+
+//        Bundle extras = getIntent().getExtras();
+//
+//        result = new Mat();
+//        if (extras != null) {
+//            final String path = extras.getString("imgPath");
+////            Mat result = new Mat();
+//            File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath());
+//            if (directory.exists()) {
+//                Log.d("image source:", directory.toString());
+//                result = correctPerspective(path);
+//                BitmapFactory.Options options = new BitmapFactory.Options();
+//                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+//                Bitmap resultBitmap = Bitmap.createBitmap(result.cols(), result.rows(), Bitmap.Config.ARGB_8888);
+//                Utils.matToBitmap(result, resultBitmap);
+//                //imageView2.setImageBitmap(resultBitmap);
+//            } else {
+//                Log.d("path wrong", directory.toString());
+//            }
+//
+//
+//            InputStream stream = null;
+//            try {
+//                stream = getAssets().open("templates/questions2.jpg");
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            Bitmap bitmap = BitmapFactory.decodeStream(stream);
+//            final Mat questions = new Mat();
+//            Utils.bitmapToMat(bitmap, questions);
+//
+//            final ArrayList<Bitmap> answers = new ArrayList<>();
+//            for (int i = 1; i < 5; i++) {
+//                InputStream stream2 = null;
+//                try {
+//                    stream = getAssets().open("templates/kropa.jpg");
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                Bitmap bitmap2 = BitmapFactory.decodeStream(stream);
+//                answers.add(bitmap2);
+//            }
+//            Thread thread = new Thread(new Runnable(){
+//                @Override
+//                public void run(){
+//                    recognitionResult = recognize(result, questions, answers);
+//                    textView.setText(String.format("%s height: %d width: %d", recognitionResult, result.height(), result.width()));
+//                }
+//            });
+//            recognizeHandler.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    recognitionResult = recognize(result, questions, answers);
+//                    textView.setText(String.format("%s height: %d width: %d", recognitionResult, result.height(), result.width()));
+//                }
+//            });
+//            AsyncTask.execute(new Runnable() {
+//                @Override
+//                public void run() {
+//                    recognitionResult = recognize(result, questions, answers);
+////                    textView.setText(String.format("%s height: %d width: %d", recognitionResult, result.height(), result.width()));
+//                    Intent i = new Intent(getApplicationContext(), ViewActivity.class);
+//                    i.putExtra("imgPath", path);
+//                    i.putExtra("result", recognitionResult);
+//                    startActivity(i);
+//                }
+//            });
+
+
     }
+}
 

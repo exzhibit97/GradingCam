@@ -1,10 +1,13 @@
 package com.example.copen.Extensions;
 
+import android.util.Log;
+
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.utils.Converters;
 
@@ -19,6 +22,7 @@ import static org.opencv.imgproc.Imgproc.GaussianBlur;
 import static org.opencv.imgproc.Imgproc.INTER_CUBIC;
 import static org.opencv.imgproc.Imgproc.RETR_LIST;
 import static org.opencv.imgproc.Imgproc.approxPolyDP;
+import static org.opencv.imgproc.Imgproc.circle;
 import static org.opencv.imgproc.Imgproc.contourArea;
 import static org.opencv.imgproc.Imgproc.cvtColor;
 import static org.opencv.imgproc.Imgproc.findContours;
@@ -56,7 +60,7 @@ public class PerspectiveCorrection {
                 MatOfPoint2f new_mat = new MatOfPoint2f(temp_contour.toArray());
                 int contourSize = (int) temp_contour.total();
                 MatOfPoint2f approxCurve_temp = new MatOfPoint2f();
-                approxPolyDP(new_mat, approxCurve_temp, contourSize * 0.05, true);
+                approxPolyDP(new_mat, approxCurve_temp, contourSize * 0.1, true); // 0.1 was 0.05 before
                 if (approxCurve_temp.total() == 4) {
                     maxArea = contourarea;
                     approxCurve = approxCurve_temp;
@@ -69,17 +73,17 @@ public class PerspectiveCorrection {
         double[] temp_double;
         temp_double = approxCurve.get(0, 0);
         Point p1 = new Point(temp_double[0], temp_double[1]);
-        //circle(imgSource,p1,55,new Scalar(0,0,255));
-        // Imgproc.warpAffine(sourceImage, dummy, rotImage,sourceImage.size());
+        circle(imgSource, p1, 55, new Scalar(0, 0, 255));
+//        Imgproc.warpAffine(sourceImage, dummy, rotImage, sourceImage.size());
         temp_double = approxCurve.get(1, 0);
         Point p2 = new Point(temp_double[0], temp_double[1]);
-        //circle(imgSource,p2,150,new Scalar(255,255,255));
+        circle(imgSource, p2, 150, new Scalar(255, 255, 255));
         temp_double = approxCurve.get(2, 0);
         Point p3 = new Point(temp_double[0], temp_double[1]);
-        //circle(imgSource,p3,200,new Scalar(255,0,0));
+        circle(imgSource, p3, 200, new Scalar(255, 0, 0));
         temp_double = approxCurve.get(3, 0);
         Point p4 = new Point(temp_double[0], temp_double[1]);
-        //circle(imgSource,p4,100,new Scalar(0,0,255));
+        circle(imgSource, p4, 100, new Scalar(0, 0, 255));
         List<Point> source = new ArrayList<Point>();
         source.add(p1);
         source.add(p2);
@@ -99,29 +103,35 @@ public class PerspectiveCorrection {
         int resultWidth = 744;
         int resultHeight = 2785;
 
-        Point ocvPOut1 = new Point(0, 0);
-        Point ocvPOut2 = new Point(0, resultHeight);
-        Point ocvPOut3 = new Point(resultWidth, resultHeight);
-        Point ocvPOut4 = new Point(resultWidth, 0);
+        //temporarily commented
+//        Point ocvPOut1 = new Point(0, 0);
+//        Point ocvPOut2 = new Point(0, resultHeight);
+//        Point ocvPOut3 = new Point(resultWidth, resultHeight);
+//        Point ocvPOut4 = new Point(resultWidth, 0);
 
+        Point ocvPOut3 = new Point(0, 0);
+        Point ocvPOut4 = new Point(0, resultHeight);
+        Point ocvPOut1 = new Point(resultWidth, resultHeight);
+        Point ocvPOut2 = new Point(resultWidth, 0);
+        Log.d("Mat dimensions:", "Height:"+inputMat.height()+" WIdth:"+inputMat.width());
 //        if (inputMat.height() > inputMat.width()) {
 //
 //            ocvPOut2 = new Point(0, 0);
 //            ocvPOut3 = new Point(0, resultHeight);
-//            ocvPOut1 = new Point(resultWidth, resultHeight);
-//            ocvPOut4= new Point(resultWidth, 0);
+//            ocvPOut4 = new Point(resultWidth, resultHeight);
+//            ocvPOut1= new Point(resultWidth, 0);
 //        }
 
-        if (inputMat.height() > inputMat.width()) {
-            // int temp = resultWidth;
-            // resultWidth = resultHeight;
-            // resultHeight = temp;
-
-            ocvPOut3 = new Point(0, 0);
-            ocvPOut4 = new Point(0, resultHeight);
-            ocvPOut1 = new Point(resultWidth, resultHeight);
-            ocvPOut2 = new Point(resultWidth, 0);
-        }
+//        if (inputMat.height() > inputMat.width()) {
+//            // int temp = resultWidth;
+//            // resultWidth = resultHeight;
+//            // resultHeight = temp;
+//
+//            ocvPOut3 = new Point(0, 0);
+//            ocvPOut4 = new Point(0, resultHeight);
+//            ocvPOut1 = new Point(resultWidth, resultHeight);
+//            ocvPOut2 = new Point(resultWidth, 0);
+//        }
 
         Mat outputMat = new Mat(resultWidth, resultHeight, CvType.CV_8UC4);
 
